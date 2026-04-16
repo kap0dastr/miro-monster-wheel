@@ -21,17 +21,17 @@
   }
 
   h1 {
-    font-size: 1.2rem;
+    font-size: 1.6rem;
     color: #f0a500;
     text-shadow: 0 0 20px #f0a50088;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
   }
 
   /* ─── WHEEL ─── */
   #wheel-container {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 420px;
+    height: 420px;
   }
 
   #wheel-canvas {
@@ -61,10 +61,10 @@
   }
 
   button {
-    padding: 7px 16px;
+    padding: 10px 22px;
     border: none;
     border-radius: 8px;
-    font-size: .85rem;
+    font-size: 1rem;
     cursor: pointer;
     font-weight: 600;
     transition: transform .1s, opacity .2s;
@@ -75,8 +75,8 @@
   #btn-spin {
     background: linear-gradient(135deg, #f0a500, #e05c00);
     color: #fff;
-    font-size: .95rem;
-    padding: 9px 22px;
+    font-size: 1.1rem;
+    padding: 12px 32px;
   }
   #btn-reset { background: #444; color: #ccc; }
   #btn-next  { background: #2a6b3a; color: #fff; display: none; }
@@ -86,9 +86,9 @@
     display: none;
     background: #16213e;
     border: 2px solid #f0a500;
-    border-radius: 12px;
-    padding: 14px 16px;
-    max-width: 340px;
+    border-radius: 16px;
+    padding: 20px 24px;
+    max-width: 640px;
     width: 100%;
     box-shadow: 0 0 30px #f0a50033;
     animation: pop .35s ease;
@@ -157,7 +157,7 @@
 
   /* ─── WEAPONS ─── */
   #weapons-panel {
-    max-width: 340px;
+    max-width: 640px;
     width: 100%;
   }
   #weapons-panel h3 {
@@ -238,7 +238,7 @@
 <h1>⚔️ Колесо монстров</h1>
 
 <div id="wheel-container">
-  <canvas id="wheel-canvas" width="280" height="280"></canvas>
+  <canvas id="wheel-canvas" width="420" height="420"></canvas>
   <div id="pointer"></div>
 </div>
 
