@@ -6,7 +6,6 @@
 <title>Колесо монстров</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { height: 100%; overflow-y: auto; }
   body {
     background: #1a1a2e;
     color: #eee;
@@ -16,7 +15,8 @@
     align-items: center;
     padding: 10px 8px;
     gap: 10px;
-    min-height: 100%;
+    overflow-y: auto;
+    height: 100vh;
   }
 
   h1 {
@@ -265,7 +265,7 @@
 <div id="result-card"></div>
 
 <div id="weapons-panel">
-  <h3>Арсенал</h3>
+  <h3>Арсенал <button id="btn-arsenal-board" style="font-size:.7rem;padding:3px 8px;background:#1a3a5c;color:#5cb8ff;border:1px solid #4a6fa5;border-radius:6px;cursor:pointer;font-weight:600;">📌 На доску</button></h3>
   <div id="weapons-list"></div>
 </div>
 
@@ -642,9 +642,10 @@ async function addCardToBoard(taskIdx) {
       style: {
         fillColor: "#16213e",
         fillOpacity: 1,
-        strokeColor: "#f0a500",
-        strokeWidth: 4,
-        strokeStyle: "normal",
+        borderColor: "#f0a500",
+        borderWidth: 4,
+        borderOpacity: 1,
+        borderStyle: "normal",
         color: "#ffffff",
         fontSize: 14,
       },
@@ -854,6 +855,34 @@ weapons.forEach(w => {
   chip.title = "Перетащи на доску";
   weaponsList.appendChild(chip);
 });
+
+document.getElementById("btn-arsenal-board").onclick = async () => {
+  const btn = document.getElementById("btn-arsenal-board");
+  btn.disabled = true;
+  btn.textContent = "...";
+  try {
+    const vp = await miro.board.viewport.get();
+    const cx = vp.x + vp.width / 2;
+    const cy = vp.y + vp.height / 2 + 400;
+    const SIZE = 100;
+    const GAP = 120;
+    const total = weapons.length;
+    const startX = cx - (total - 1) * GAP / 2;
+    for (let i = 0; i < total; i++) {
+      await miro.board.createText({
+        content: weapons[i].emoji + "\n" + weapons[i].name,
+        x: startX + i * GAP,
+        y: cy,
+        width: SIZE,
+        style: { fontSize: 28, textAlign: "center" },
+      });
+    }
+    btn.textContent = "✅";
+  } catch(e) {
+    btn.textContent = "❌";
+    btn.disabled = false;
+  }
+};
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 function escHtml(s) {
