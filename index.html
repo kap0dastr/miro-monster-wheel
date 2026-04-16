@@ -15,8 +15,6 @@
     align-items: center;
     padding: 10px 8px;
     gap: 10px;
-    overflow-y: auto;
-    height: 100vh;
   }
 
   h1 {
@@ -264,10 +262,6 @@
 
 <div id="result-card"></div>
 
-<div id="weapons-panel">
-  <h3>Арсенал <button id="btn-arsenal-board" style="font-size:.7rem;padding:3px 8px;background:#1a3a5c;color:#5cb8ff;border:1px solid #4a6fa5;border-radius:6px;cursor:pointer;font-weight:600;">📌 На доску</button></h3>
-  <div id="weapons-list"></div>
-</div>
 
 <!-- PIN MODAL -->
 <div id="pin-overlay">
@@ -623,21 +617,26 @@ async function addCardToBoard(taskIdx) {
   btn.textContent = "Добавляю...";
   try {
     const vp = await miro.board.viewport.get();
-    const cx = vp.x + vp.width / 2;
+
+    // Смещаем каждую следующую карточку вправо используя boardCount из Firebase
+    const snap = await get(STATE_REF);
+    const state = snap.val() || {};
+    const boardCount = state.boardCount || 0;
+    await set(STATE_REF, { ...state, boardCount: boardCount + 1 });
+
+    const cx = vp.x + vp.width / 2 + 500 + boardCount * 1050;
     const cy = vp.y + vp.height / 2;
 
-    // Смещаем правее центра чтобы не перекрывать панель
-    const ox = cx + 500;
-    const oy = cy;
-    const W = 860, H = 340;
-    const IMG_SIZE = 180;
-    const LINE = 72;
-    let curY = oy - LINE * 1.5;
+    const W = 860, H = 320;
+    const IMG_SIZE = 190;
+    const textX = cx - W/2 + IMG_SIZE + 50;
+    const textW = W - IMG_SIZE - 70;
+    let curY = cy - 110;
 
-    // Фон карточки
+    // Фон карточки — скруглённый прямоугольник
     await miro.board.createShape({
-      shape: "rectangle",
-      x: ox, y: oy,
+      shape: "round_rectangle",
+      x: cx, y: cy,
       width: W, height: H,
       style: {
         fillColor: "#16213e",
@@ -646,17 +645,15 @@ async function addCardToBoard(taskIdx) {
         borderWidth: 4,
         borderOpacity: 1,
         borderStyle: "normal",
-        color: "#ffffff",
-        fontSize: 14,
       },
     });
 
-    // Картинка монстра (слева внутри карточки)
+    // Картинка монстра (слева)
     if (t.monster_board_url) {
       await miro.board.createImage({
         url: t.monster_board_url,
-        x: ox - W/2 + IMG_SIZE/2 + 20,
-        y: oy,
+        x: cx - W/2 + IMG_SIZE/2 + 15,
+        y: cy,
         width: IMG_SIZE,
       });
     }
@@ -664,55 +661,80 @@ async function addCardToBoard(taskIdx) {
     // Название задачи
     await miro.board.createText({
       content: t.task_name || "Монстр",
-      x: ox + 60,
+      x: textX + textW/2,
       y: curY,
-      width: 480,
+      width: textW,
       style: { fontSize: 24, color: "#f0a500", textAlign: "left" },
     });
-    curY += LINE;
+    curY += 75;
 
-    // Номер задачи (кликабельный) + SP
+    // Номер задачи + SP — с кликабельной ссылкой
     if (t.task_number || t.score) {
-      const numText = await miro.board.createText({
+      const numItem = await miro.board.createText({
         content: [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("   |   "),
-        x: ox + 60,
+        x: textX + textW/2,
         y: curY,
-        width: 480,
+        width: textW,
         style: { fontSize: 20, color: "#aaaaaa", textAlign: "left" },
       });
-      if (t.task_link && numText.link !== undefined) {
-        numText.link = { url: t.task_link };
-        await numText.sync();
+      if (t.task_link) {
+        try { numItem.link = { url: t.task_link }; await numItem.sync(); } catch(e) {}
       }
-      curY += LINE;
+      curY += 65;
     }
 
     // Воины
     if (t.warriors && t.warriors.length > 0) {
       await miro.board.createText({
-        content: "⚔️  " + t.warriors.join("   •   "),
-        x: ox + 60,
+        content: "⚔️ Воины: " + t.warriors.join("  •  "),
+        x: textX + textW/2,
         y: curY,
-        width: 480,
+        width: textW,
         style: { fontSize: 18, color: "#b0c4de", textAlign: "left" },
       });
-      curY += LINE;
     }
 
-    // Баннер под карточкой
+    // Баннер — под карточкой, поверх (z-order выше)
     if (t.banner_board_url) {
       await miro.board.createImage({
         url: t.banner_board_url,
-        x: ox,
-        y: oy + H/2 + 200,
-        width: W + 100,
+        x: cx,
+        y: cy + H/2 + 180,
+        width: W + 60,
+      });
+    }
+
+    // Арсенал — скруглённые прямоугольники с оружием
+    const arsenalY = cy + H/2 + (t.banner_board_url ? 430 : 120);
+    const WEAPON_W = 140, WEAPON_H = 58, GAP = 160;
+    const startX = cx - (weapons.length - 1) * GAP / 2;
+    for (let i = 0; i < weapons.length; i++) {
+      const wx = startX + i * GAP;
+      await miro.board.createShape({
+        shape: "round_rectangle",
+        x: wx, y: arsenalY,
+        width: WEAPON_W, height: WEAPON_H,
+        style: {
+          fillColor: "#2a2a4a",
+          fillOpacity: 1,
+          borderColor: "#4a4a7a",
+          borderWidth: 2,
+          borderOpacity: 1,
+          borderStyle: "normal",
+        },
+      });
+      await miro.board.createText({
+        content: `${weapons[i].emoji} ${weapons[i].name}`,
+        x: wx, y: arsenalY,
+        width: WEAPON_W - 10,
+        style: { fontSize: 18, textAlign: "center" },
       });
     }
 
     btn.textContent = "✅ Добавлено!";
   } catch (err) {
     console.error("addCardToBoard failed:", err);
-    btn.textContent = "❌ Ошибка: " + err.message;
+    btn.textContent = "❌ " + err.message;
     btn.disabled = false;
   }
 }
@@ -845,44 +867,7 @@ document.getElementById("btn-reset").onclick = async () => {
   await pushState({ removed: [], angle: 0, winner: null });
 };
 
-// ─── WEAPONS ─────────────────────────────────────────────────────
-const weaponsList = document.getElementById("weapons-list");
-weapons.forEach(w => {
-  const chip = document.createElement("div");
-  chip.className = "weapon-chip";
-  chip.draggable = true;
-  chip.textContent = `${w.emoji} ${w.name}`;
-  chip.title = "Перетащи на доску";
-  weaponsList.appendChild(chip);
-});
-
-document.getElementById("btn-arsenal-board").onclick = async () => {
-  const btn = document.getElementById("btn-arsenal-board");
-  btn.disabled = true;
-  btn.textContent = "...";
-  try {
-    const vp = await miro.board.viewport.get();
-    const cx = vp.x + vp.width / 2;
-    const cy = vp.y + vp.height / 2 + 400;
-    const SIZE = 100;
-    const GAP = 120;
-    const total = weapons.length;
-    const startX = cx - (total - 1) * GAP / 2;
-    for (let i = 0; i < total; i++) {
-      await miro.board.createText({
-        content: weapons[i].emoji + "\n" + weapons[i].name,
-        x: startX + i * GAP,
-        y: cy,
-        width: SIZE,
-        style: { fontSize: 28, textAlign: "center" },
-      });
-    }
-    btn.textContent = "✅";
-  } catch(e) {
-    btn.textContent = "❌";
-    btn.disabled = false;
-  }
-};
+// (weapons panel removed — arsenal is added to board via "📌 Добавить на доску")
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 function escHtml(s) {
