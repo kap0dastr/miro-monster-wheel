@@ -8,11 +8,8 @@
 <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 <script>
   miro.board.ui.on('icon:click', async () => {
-    await miro.board.ui.openModal({
-      url: 'index.html',
-      width: 1200,
-      height: 800,
-      fullscreen: false,
+    await miro.board.ui.openPanel({
+      url: 'index.html?v=' + Date.now(),
     });
   });
 </script>
