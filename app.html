@@ -7,17 +7,12 @@
 <body>
 <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 <script>
-  async function openWheel() {
+  miro.board.ui.on('icon:click', async () => {
     await miro.board.ui.openPanel({
-      url: 'index.html',
+      url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
       width: 800,
     });
-  }
-
-  miro.board.ui.on('icon:click', openWheel);
-
-  // Fallback: если иконку уже кликнули до загрузки страницы
-  openWheel().catch(() => {});
+  });
 </script>
 </body>
 </html>
