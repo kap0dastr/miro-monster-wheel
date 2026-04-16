@@ -6,6 +6,7 @@
 <title>Колесо монстров</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; overflow-y: auto; }
   body {
     background: #1a1a2e;
     color: #eee;
@@ -15,6 +16,7 @@
     align-items: center;
     padding: 10px 8px;
     gap: 10px;
+    min-height: 100%;
   }
 
   h1 {
@@ -624,18 +626,35 @@ async function addCardToBoard(taskIdx) {
     const cx = vp.x + vp.width / 2;
     const cy = vp.y + vp.height / 2;
 
-    // Смещаем вправо от центра чтобы не перекрывать панель
+    // Смещаем правее центра чтобы не перекрывать панель
     const ox = cx + 500;
     const oy = cy;
+    const W = 860, H = 340;
     const IMG_SIZE = 180;
-    const LINE = 70;
-    let curY = oy - LINE * 2;
+    const LINE = 72;
+    let curY = oy - LINE * 1.5;
 
-    // Картинка монстра
+    // Фон карточки
+    await miro.board.createShape({
+      shape: "rectangle",
+      x: ox, y: oy,
+      width: W, height: H,
+      style: {
+        fillColor: "#16213e",
+        fillOpacity: 1,
+        strokeColor: "#f0a500",
+        strokeWidth: 4,
+        strokeStyle: "normal",
+        color: "#ffffff",
+        fontSize: 14,
+      },
+    });
+
+    // Картинка монстра (слева внутри карточки)
     if (t.monster_board_url) {
       await miro.board.createImage({
         url: t.monster_board_url,
-        x: ox - 280,
+        x: ox - W/2 + IMG_SIZE/2 + 20,
         y: oy,
         width: IMG_SIZE,
       });
@@ -644,57 +663,48 @@ async function addCardToBoard(taskIdx) {
     // Название задачи
     await miro.board.createText({
       content: t.task_name || "Монстр",
-      x: ox + 50,
+      x: ox + 60,
       y: curY,
-      width: 520,
-      style: { fontSize: 26, textAlign: "left" },
+      width: 480,
+      style: { fontSize: 24, color: "#f0a500", textAlign: "left" },
     });
     curY += LINE;
 
-    // Номер + SP
-    const meta = [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("   |   ");
-    if (meta) {
-      await miro.board.createText({
-        content: meta,
-        x: ox + 50,
+    // Номер задачи (кликабельный) + SP
+    if (t.task_number || t.score) {
+      const numText = await miro.board.createText({
+        content: [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("   |   "),
+        x: ox + 60,
         y: curY,
-        width: 520,
-        style: { fontSize: 20, textAlign: "left" },
+        width: 480,
+        style: { fontSize: 20, color: "#aaaaaa", textAlign: "left" },
       });
-      curY += LINE;
-    }
-
-    // Ссылка
-    if (t.task_link) {
-      await miro.board.createText({
-        content: t.task_link,
-        x: ox + 50,
-        y: curY,
-        width: 520,
-        style: { fontSize: 16, textAlign: "left" },
-      });
+      if (t.task_link && numText.link !== undefined) {
+        numText.link = { url: t.task_link };
+        await numText.sync();
+      }
       curY += LINE;
     }
 
     // Воины
     if (t.warriors && t.warriors.length > 0) {
       await miro.board.createText({
-        content: "⚔️ " + t.warriors.join("  •  "),
-        x: ox + 50,
+        content: "⚔️  " + t.warriors.join("   •   "),
+        x: ox + 60,
         y: curY,
-        width: 520,
-        style: { fontSize: 18, textAlign: "left" },
+        width: 480,
+        style: { fontSize: 18, color: "#b0c4de", textAlign: "left" },
       });
       curY += LINE;
     }
 
-    // Баннер под всем
+    // Баннер под карточкой
     if (t.banner_board_url) {
       await miro.board.createImage({
         url: t.banner_board_url,
         x: ox,
-        y: curY + 200,
-        width: 900,
+        y: oy + H/2 + 200,
+        width: W + 100,
       });
     }
 
