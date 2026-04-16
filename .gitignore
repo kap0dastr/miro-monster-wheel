@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+items_to_translate.json
+miro_flow_creator.py
+miro_translate.py
+miro_apply_translations.py
+download_monsters.py
