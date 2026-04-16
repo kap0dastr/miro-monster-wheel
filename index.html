@@ -15,8 +15,6 @@
     align-items: center;
     padding: 10px 8px;
     gap: 10px;
-    overflow-y: auto;
-    min-height: 100vh;
   }
 
   h1 {
@@ -626,15 +624,19 @@ async function addCardToBoard(taskIdx) {
     const cx = vp.x + vp.width / 2;
     const cy = vp.y + vp.height / 2;
 
+    // Смещаем вправо от центра чтобы не перекрывать панель
+    const ox = cx + 500;
+    const oy = cy;
     const IMG_SIZE = 180;
-    const LINE = 60;
+    const LINE = 70;
+    let curY = oy - LINE * 2;
 
     // Картинка монстра
     if (t.monster_board_url) {
       await miro.board.createImage({
         url: t.monster_board_url,
-        x: cx - 300,
-        y: cy,
+        x: ox - 280,
+        y: oy,
         width: IMG_SIZE,
       });
     }
@@ -642,52 +644,56 @@ async function addCardToBoard(taskIdx) {
     // Название задачи
     await miro.board.createText({
       content: t.task_name || "Монстр",
-      x: cx + 100,
-      y: cy - LINE * 1.5,
-      width: 500,
-      style: { fontSize: 28, bold: true, textAlign: "left" },
+      x: ox + 50,
+      y: curY,
+      width: 520,
+      style: { fontSize: 26, textAlign: "left" },
     });
+    curY += LINE;
 
     // Номер + SP
     const meta = [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("   |   ");
     if (meta) {
       await miro.board.createText({
         content: meta,
-        x: cx + 100,
-        y: cy - LINE * 0.5,
-        width: 500,
-        style: { fontSize: 22, textAlign: "left" },
+        x: ox + 50,
+        y: curY,
+        width: 520,
+        style: { fontSize: 20, textAlign: "left" },
       });
+      curY += LINE;
     }
 
     // Ссылка
     if (t.task_link) {
       await miro.board.createText({
         content: t.task_link,
-        x: cx + 100,
-        y: cy + LINE * 0.5,
-        width: 500,
-        style: { fontSize: 18, textAlign: "left" },
+        x: ox + 50,
+        y: curY,
+        width: 520,
+        style: { fontSize: 16, textAlign: "left" },
       });
+      curY += LINE;
     }
 
     // Воины
     if (t.warriors && t.warriors.length > 0) {
       await miro.board.createText({
         content: "⚔️ " + t.warriors.join("  •  "),
-        x: cx + 100,
-        y: cy + LINE * 1.5,
-        width: 500,
-        style: { fontSize: 20, textAlign: "left" },
+        x: ox + 50,
+        y: curY,
+        width: 520,
+        style: { fontSize: 18, textAlign: "left" },
       });
+      curY += LINE;
     }
 
-    // Баннер под карточкой
+    // Баннер под всем
     if (t.banner_board_url) {
       await miro.board.createImage({
         url: t.banner_board_url,
-        x: cx,
-        y: cy + 350,
+        x: ox,
+        y: curY + 200,
         width: 900,
       });
     }
