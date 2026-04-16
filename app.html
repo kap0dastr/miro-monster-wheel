@@ -8,28 +8,20 @@
 <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 <script>
   miro.board.ui.on('icon:click', async () => {
-    console.log('[wheel] icon clicked, opening panel...');
+    console.log('[wheel] icon clicked');
     try {
       await miro.board.ui.openPanel({
         url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
-        width: 800,
       });
-      console.log('[wheel] panel opened ok');
     } catch (e) {
       console.error('[wheel] openPanel failed:', e);
-      // fallback: open in modal
-      try {
-        await miro.board.ui.openModal({
-          url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
-          width: 900,
-          height: 700,
-        });
-      } catch (e2) {
-        console.error('[wheel] openModal failed:', e2);
-      }
+      await miro.board.ui.openModal({
+        url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
+        width: 900,
+        height: 700,
+      });
     }
   });
-  console.log('[wheel] app.html loaded, waiting for icon:click');
 </script>
 </body>
 </html>
