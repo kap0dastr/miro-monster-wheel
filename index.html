@@ -6,7 +6,6 @@
 <title>Колесо монстров</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: #1a1a2e;
     color: #eee;
@@ -16,7 +15,8 @@
     align-items: center;
     padding: 10px 8px;
     gap: 10px;
-    overflow-y: scroll;
+    overflow-y: auto;
+    min-height: 100vh;
   }
 
   h1 {
@@ -626,55 +626,37 @@ async function addCardToBoard(taskIdx) {
     const cx = vp.x + vp.width / 2;
     const cy = vp.y + vp.height / 2;
 
-    // Размеры карточки
-    const W = 900, H = 380;
-    const PAD = 28;
-    const IMG_SIZE = 200;
+    const IMG_SIZE = 180;
+    const LINE = 60;
 
-    // Фон карточки
-    await miro.board.createShape({
-      type: "rectangle",
-      x: cx, y: cy,
-      width: W, height: H,
-      style: {
-        fillColor: "#16213e",
-        borderColor: "#f0a500",
-        borderWidth: 3,
-        borderOpacity: 1,
-        fillOpacity: 1,
-        borderStyle: "normal",
-        color: "#ffffff",
-        fontSize: 14,
-      },
-    });
-
-    // Картинка монстра (слева)
+    // Картинка монстра
     if (t.monster_board_url) {
       await miro.board.createImage({
         url: t.monster_board_url,
-        x: cx - W/2 + PAD + IMG_SIZE/2,
+        x: cx - 300,
         y: cy,
         width: IMG_SIZE,
       });
     }
 
     // Название задачи
-    const textX = cx - W/2 + PAD*2 + IMG_SIZE;
     await miro.board.createText({
       content: t.task_name || "Монстр",
-      x: textX + 180, y: cy - 110,
-      style: { color: "#f0a500", fontSize: 26, fontWeight: "bold", textAlign: "left" },
-      width: 420,
+      x: cx + 100,
+      y: cy - LINE * 1.5,
+      width: 500,
+      style: { fontSize: 28, bold: true, textAlign: "left" },
     });
 
     // Номер + SP
-    const meta = [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("  |  ");
+    const meta = [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("   |   ");
     if (meta) {
       await miro.board.createText({
         content: meta,
-        x: textX + 180, y: cy - 50,
-        style: { color: "#aaaaaa", fontSize: 20, textAlign: "left" },
-        width: 420,
+        x: cx + 100,
+        y: cy - LINE * 0.5,
+        width: 500,
+        style: { fontSize: 22, textAlign: "left" },
       });
     }
 
@@ -682,9 +664,10 @@ async function addCardToBoard(taskIdx) {
     if (t.task_link) {
       await miro.board.createText({
         content: t.task_link,
-        x: textX + 180, y: cy,
-        style: { color: "#5cb8ff", fontSize: 16, textAlign: "left" },
-        width: 420,
+        x: cx + 100,
+        y: cy + LINE * 0.5,
+        width: 500,
+        style: { fontSize: 18, textAlign: "left" },
       });
     }
 
@@ -692,9 +675,10 @@ async function addCardToBoard(taskIdx) {
     if (t.warriors && t.warriors.length > 0) {
       await miro.board.createText({
         content: "⚔️ " + t.warriors.join("  •  "),
-        x: textX + 180, y: cy + 65,
-        style: { color: "#b0c4de", fontSize: 18, textAlign: "left" },
-        width: 420,
+        x: cx + 100,
+        y: cy + LINE * 1.5,
+        width: 500,
+        style: { fontSize: 20, textAlign: "left" },
       });
     }
 
@@ -703,8 +687,8 @@ async function addCardToBoard(taskIdx) {
       await miro.board.createImage({
         url: t.banner_board_url,
         x: cx,
-        y: cy + H/2 + 20 + 150,
-        width: W,
+        y: cy + 350,
+        width: 900,
       });
     }
 
