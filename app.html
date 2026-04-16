@@ -7,12 +7,17 @@
 <body>
 <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 <script>
-  miro.board.ui.on('icon:click', async () => {
+  async function openWheel() {
     await miro.board.ui.openPanel({
       url: 'index.html',
       width: 800,
     });
-  });
+  }
+
+  miro.board.ui.on('icon:click', openWheel);
+
+  // Fallback: если иконку уже кликнули до загрузки страницы
+  openWheel().catch(() => {});
 </script>
 </body>
 </html>
