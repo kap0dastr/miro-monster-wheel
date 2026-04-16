@@ -8,19 +8,9 @@
 <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 <script>
   miro.board.ui.on('icon:click', async () => {
-    console.log('[wheel] icon clicked');
-    try {
-      await miro.board.ui.openPanel({
-        url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
-      });
-    } catch (e) {
-      console.error('[wheel] openPanel failed:', e);
-      await miro.board.ui.openModal({
-        url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
-        width: 900,
-        height: 700,
-      });
-    }
+    await miro.board.ui.openPanel({
+      url: 'https://kap0dastr.github.io/miro-monster-wheel/index.html',
+    });
   });
 </script>
 </body>
