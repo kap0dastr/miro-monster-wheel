@@ -7,11 +7,13 @@
 <body>
 <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 <script>
-  console.log('[wheel] app.html loaded');
-
   miro.board.ui.on('icon:click', async () => {
-    console.log('[wheel] icon:click fired');
-    await miro.board.ui.openPanel({ url: 'index.html' });
+    await miro.board.ui.openModal({
+      url: 'index.html',
+      width: 1200,
+      height: 800,
+      fullscreen: false,
+    });
   });
 </script>
 </body>
