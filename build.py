@@ -99,24 +99,36 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <title>Колесо монстров</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    height: 100%;
-    background: #1a1a2e;
-  }
+  html { height: 100%; }
   body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;                /* body не скроллится; скроллит #scroller */
+    background: #1a1a2e;
     color: #eee;
     font-family: 'Segoe UI', sans-serif;
   }
-  #app-scroll {
-    position: fixed;
-    inset: 0;
-    overflow-y: auto;
+  #scroller {
+    height: 100%;
+    width: 100%;
+    overflow-y: scroll;              /* всегда показывать вертикальный скролл */
     overflow-x: hidden;
-    padding: 10px 8px 24px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;    /* не отдавать скролл родителю (Miro) */
+  }
+  /* Делаем скроллбар видимым */
+  #scroller::-webkit-scrollbar { width: 10px; }
+  #scroller::-webkit-scrollbar-track { background: #0d1b2a; }
+  #scroller::-webkit-scrollbar-thumb { background: #f0a500; border-radius: 5px; }
+  #scroller::-webkit-scrollbar-thumb:hover { background: #ffb820; }
+
+  #content {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 10px 8px 30px;
     gap: 10px;
+    min-height: 100%;
   }
 
   h1 {
@@ -347,25 +359,27 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 </head>
 <body>
 
-<div id="app-scroll">
+<div id="scroller">
+  <div id="content">
 
-<h1>⚔️ Колесо монстров</h1>
+    <h1>⚔️ Колесо монстров</h1>
 
-<div id="wheel-container">
-  <canvas id="wheel-canvas" width="300" height="300"></canvas>
-  <div id="pointer"></div>
-</div>
+    <div id="wheel-container">
+      <canvas id="wheel-canvas" width="300" height="300"></canvas>
+      <div id="pointer"></div>
+    </div>
 
-<div id="status">Подключение...</div>
+    <div id="status">Подключение...</div>
 
-<div class="btn-row">
-  <button id="btn-spin">🎲 Крутить колесо</button>
-  <button id="btn-next" style="display:none">➡️ Следующий монстр</button>
-  <button id="btn-reset">🔄 Сброс</button>
-</div>
+    <div class="btn-row">
+      <button id="btn-spin">🎲 Крутить колесо</button>
+      <button id="btn-next" style="display:none">➡️ Следующий монстр</button>
+      <button id="btn-reset">🔄 Сброс</button>
+    </div>
 
-<div id="result-card"></div>
+    <div id="result-card"></div>
 
+  </div>
 </div>
 
 <!-- PIN MODAL -->
@@ -389,6 +403,15 @@ import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/fir
 // ─── CONFIG (baked in by build.py) ───────────────────────────────
 const APP_DATA = __APP_DATA__;
 const { firebase: fbCfg, pins, weapons, tasks } = APP_DATA;
+
+// Не отдавать wheel-события доске Miro, когда крутим панель
+(() => {
+  const scroller = document.getElementById("scroller");
+  if (!scroller) return;
+  const stop = e => e.stopPropagation();
+  scroller.addEventListener("wheel", stop, { passive: true });
+  scroller.addEventListener("touchmove", stop, { passive: true });
+})();
 
 // ─── FIREBASE ────────────────────────────────────────────────────
 const app = initializeApp(fbCfg);
@@ -617,13 +640,13 @@ async function addCardToBoard(taskIdx) {
     const boardCount = state.boardCount || 0;
     await set(STATE_REF, { ...state, boardCount: boardCount + 1 });
 
-    const W = 1100, H = 520;
+    const W = 1100, H = 820;
     const cx = vp.x + vp.width / 2 + 600 + boardCount * (W + 200);
     const cy = vp.y + vp.height / 2;
 
     const IMG_SIZE = 220;
     const textX = cx - W/2 + IMG_SIZE + 70;
-    const textW = W - IMG_SIZE - 100;
+    const textW = W - IMG_SIZE - 110;
 
     // Фон карточки — скруглённый прямоугольник с жёлтой рамкой
     await miro.board.createShape({
@@ -676,34 +699,56 @@ async function addCardToBoard(taskIdx) {
         width: textW,
         style: { fontSize: 22, color: "#cccccc", textAlign: "left" },
       });
-      // Дублируем ссылку через свойство link (на случай если <a> не подхватится)
       if (t.task_link) {
         try { numItem.linkedTo = t.task_link; await numItem.sync(); } catch(e) {}
       }
-      curY += 75;
     }
 
-    // Воины
+    // Воины — под картинкой монстра, во всю ширину
+    let fullY = cy - H/2 + IMG_SIZE + 75;
     if (t.warriors && t.warriors.length > 0) {
       await miro.board.createText({
         content: "⚔️ Воины: " + t.warriors.map(escHtml).join("  •  "),
-        x: textX + textW/2,
-        y: curY,
-        width: textW,
+        x: cx,
+        y: fullY,
+        width: W - 80,
         style: { fontSize: 20, color: "#b0c4de", textAlign: "left" },
       });
+      fullY += 55;
     }
 
-    // Баннер — поверх нижней части прямоугольника, внутри рамки
-    const BANNER_W = W - 80;
-    const bannerY = cy + H/2 - 75;
+    // Баннер — внутри прямоугольника
     if (t.banner_board_url) {
+      const BANNER_W = W - 100;
       await miro.board.createImage({
         url: t.banner_board_url,
         x: cx,
-        y: bannerY,
+        y: fullY + 70,
         width: BANNER_W,
       });
+      fullY += 155;
+    }
+
+    // «Какие проблемы у нас возникли с этим монстром» — заголовок
+    await miro.board.createText({
+      content: "Какие проблемы у нас возникли с этим монстром",
+      x: cx,
+      y: fullY + 22,
+      width: W - 80,
+      style: { fontSize: 22, color: "#f0a500", textAlign: "center" },
+    });
+    fullY += 65;
+
+    // Список 1. 2. 3. — пустые строки для заполнения на ретро
+    for (let i = 1; i <= 3; i++) {
+      await miro.board.createText({
+        content: `${i}.`,
+        x: cx,
+        y: fullY + 20,
+        width: W - 120,
+        style: { fontSize: 20, color: "#eeeeee", textAlign: "left" },
+      });
+      fullY += 55;
     }
 
     // Арсенал — под карточкой, скруглённые прямоугольники с жёлтым текстом
