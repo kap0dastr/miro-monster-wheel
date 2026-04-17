@@ -648,21 +648,12 @@ async function addCardToBoard(taskIdx) {
     const textX = cx - W/2 + IMG_SIZE + 70;
     const textW = W - IMG_SIZE - 110;
 
-    // Фон карточки — скруглённый прямоугольник с жёлтой рамкой
-    const cardShape = await miro.board.createShape({
-      shape: "round_rectangle",
+    // Фон карточки — SVG-картинка с радиусом углов ровно 50px
+    await miro.board.createImage({
+      url: "https://kap0dastr.github.io/miro-monster-wheel/card-bg.svg?v=" + Date.now(),
       x: cx, y: cy,
-      width: W, height: H,
-      style: {
-        fillColor: "#16213e",
-        fillOpacity: 1,
-        borderColor: "#f0a500",
-        borderWidth: 4,
-        borderOpacity: 1,
-        borderStyle: "normal",
-      },
+      width: W,
     });
-    try { cardShape.style.borderRadius = 50; await cardShape.sync(); } catch(e) {}
 
     // Картинка монстра (слева, в верхней части)
     if (t.monster_board_url) {
