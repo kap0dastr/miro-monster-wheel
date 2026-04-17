@@ -649,7 +649,7 @@ async function addCardToBoard(taskIdx) {
     const textW = W - IMG_SIZE - 110;
 
     // Фон карточки — скруглённый прямоугольник с жёлтой рамкой
-    await miro.board.createShape({
+    const cardShape = await miro.board.createShape({
       shape: "round_rectangle",
       x: cx, y: cy,
       width: W, height: H,
@@ -662,6 +662,7 @@ async function addCardToBoard(taskIdx) {
         borderStyle: "normal",
       },
     });
+    try { cardShape.style.borderRadius = 50; await cardShape.sync(); } catch(e) {}
 
     // Картинка монстра (слева, в верхней части)
     if (t.monster_board_url) {
