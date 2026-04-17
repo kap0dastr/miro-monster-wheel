@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Miro__context_explore",
+      "mcp__claude_ai_Miro__board_list_items",
+      "Bash(python3:*)",
+      "mcp__claude_ai_Miro__diagram_get_dsl",
+      "mcp__claude_ai_Miro__diagram_create"
+    ]
+  }
+}

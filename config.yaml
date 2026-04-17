@@ -1,0 +1,112 @@
+# ═══════════════════════════════════════════════════════════════
+#   КОНФИГ "КОЛЕСО МОНСТРОВ" — заполни этот файл своими данными
+# ═══════════════════════════════════════════════════════════════
+#
+# КАК ЗАПОЛНИТЬ:
+# 1. Посмотри картинки в папке ./monsters/ (01.png, 02.png...)
+# 2. Для каждой задачи укажи номер картинки монстра + данные задачи
+# 3. Сохрани файл — я соберу из него колесо
+#
+# ВСЕ ПОЛЯ:
+#   monster_image  — имя файла из папки monsters/ (например "14.png")
+#   task_number    — номер/код задачи (например "SPRINT-42" или "1")
+#   task_link      — ссылка на задачу (Jira / Trello / Notion / любая URL)
+#   task_name      — название задачи
+#   score          — оценка задачи (story points / сложность)
+#   banner_image   — вторая картинка (длинная/баннер), путь к файлу или URL
+#   warriors       — список исполнителей (список имён через -)
+
+# ═══════════════════════════════════════════════════════════════
+#   PIN-КОДЫ (НЕ МЕНЯТЬ — уже согласовано)
+# ═══════════════════════════════════════════════════════════════
+pins:
+  spin: "0202"    # PIN для кручения колеса
+  reset: "0909"   # PIN для сброса
+
+# ═══════════════════════════════════════════════════════════════
+#   FIREBASE (заполним после создания проекта, см. README_FIREBASE.md)
+# ═══════════════════════════════════════════════════════════════
+firebase:
+  apiKey: "AIzaSyAasyAXNyoBj1Asznty1fMTLS8x2_7N2JE"
+  authDomain: "miroconnectretros.firebaseapp.com"
+  databaseURL: "https://miroconnectretros-default-rtdb.europe-west1.firebasedatabase.app"
+  projectId: "miroconnectretros"
+  storageBucket: "miroconnectretros.firebasestorage.app"
+  messagingSenderId: "198373916575"
+  appId: "1:198373916575:web:83057ebeb0277661f747aa"
+
+# ═══════════════════════════════════════════════════════════════
+#   ЗАДАЧИ (монстры). Можно добавлять/удалять элементы.
+#   Рекомендовано: 5-10 задач на ретро.
+# ═══════════════════════════════════════════════════════════════
+tasks:
+
+  - monster_image: "21.png"
+    task_number: "P-5241"
+    task_link: "https://yt.heronodes.io/issue/P-5241"
+    task_name: "Придумать таблицу для сетлментов"
+    score: 6
+    banner_image: "tasksdevimg/5241.png"
+    warriors:
+      - "Вадим N"
+      - "Вадим И"
+
+  - monster_image: "22.png"
+    task_number: "P-4719"
+    task_link: "https://yt.heronodes.io/issue/P-4719"
+    task_name: "Сделать ручку get /invoice/:id"
+    score: 3
+    banner_image: "tasksdevimg/4719.png"
+    warriors:
+      - "Андрей"
+      - "Маша"
+
+  - monster_image: "25.png"
+    task_number: "P-5982"
+    task_link: "https://yt.heronodes.io/issue/P-5982"
+    task_name: "Автоматический разлогин и уменьшение времени сессии"
+    score: 6
+    banner_image: "tasksdevimg/5982.png"
+    warriors:
+      - "Андрей"
+      - "Элина"
+
+  - monster_image: "02.png"
+    task_number: "P-6068"
+    task_link: "https://yt.heronodes.io/issue/P-6068"
+    task_name: "Добавить возможность настройки whitelist для main юзера в авеб/равеб через padmin"
+    score: 5
+    banner_image: "tasksdevimg/6068.png"
+    warriors:
+      - "Андрей"
+      - "Элина"
+
+  - monster_image: "01.png"
+    task_number: "P-5971"
+    task_link: "https://yt.heronodes.io/issue/P-5971"
+    task_name: "Middleware безопасности"
+    score: 0
+    banner_image: "tasksdevimg/5971.png"
+    warriors:
+      - "Андрей"
+      - "Маша"
+
+  # ─── добавляй ещё блоки по шаблону выше ────────────────────────
+
+# ═══════════════════════════════════════════════════════════════
+#   АРСЕНАЛ ОРУЖИЯ (иконки, которые можно таскать в зону тактик)
+#   Если список пустой — возьму дефолтные эмодзи.
+# ═══════════════════════════════════════════════════════════════
+weapons:
+  - name: "Меч"
+    emoji: "⚔️"
+  - name: "Лук"
+    emoji: "🏹"
+  - name: "Посох"
+    emoji: "🪄"
+  - name: "Зелье"
+    emoji: "🧪"
+  - name: "Щит"
+    emoji: "🛡️"
+  - name: "Кристалл"
+    emoji: "🔮"

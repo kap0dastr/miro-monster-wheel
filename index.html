@@ -6,14 +6,23 @@
 <title>Колесо монстров</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
+  html, body {
+    height: 100%;
     background: #1a1a2e;
+  }
+  body {
     color: #eee;
     font-family: 'Segoe UI', sans-serif;
+  }
+  #app-scroll {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 8px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 8px;
     gap: 10px;
   }
 
@@ -245,6 +254,8 @@
 </head>
 <body>
 
+<div id="app-scroll">
+
 <h1>⚔️ Колесо монстров</h1>
 
 <div id="wheel-container">
@@ -262,6 +273,7 @@
 
 <div id="result-card"></div>
 
+</div>
 
 <!-- PIN MODAL -->
 <div id="pin-overlay">
@@ -624,16 +636,15 @@ async function addCardToBoard(taskIdx) {
     const boardCount = state.boardCount || 0;
     await set(STATE_REF, { ...state, boardCount: boardCount + 1 });
 
-    const cx = vp.x + vp.width / 2 + 500 + boardCount * 1050;
+    const W = 1100, H = 520;
+    const cx = vp.x + vp.width / 2 + 600 + boardCount * (W + 200);
     const cy = vp.y + vp.height / 2;
 
-    const W = 860, H = 320;
-    const IMG_SIZE = 190;
-    const textX = cx - W/2 + IMG_SIZE + 50;
-    const textW = W - IMG_SIZE - 70;
-    let curY = cy - 110;
+    const IMG_SIZE = 220;
+    const textX = cx - W/2 + IMG_SIZE + 70;
+    const textW = W - IMG_SIZE - 100;
 
-    // Фон карточки — скруглённый прямоугольник
+    // Фон карточки — скруглённый прямоугольник с жёлтой рамкой
     await miro.board.createShape({
       shape: "round_rectangle",
       x: cx, y: cy,
@@ -648,65 +659,75 @@ async function addCardToBoard(taskIdx) {
       },
     });
 
-    // Картинка монстра (слева)
+    // Картинка монстра (слева, в верхней части)
     if (t.monster_board_url) {
       await miro.board.createImage({
         url: t.monster_board_url,
-        x: cx - W/2 + IMG_SIZE/2 + 15,
-        y: cy,
+        x: cx - W/2 + IMG_SIZE/2 + 30,
+        y: cy - H/2 + IMG_SIZE/2 + 40,
         width: IMG_SIZE,
       });
     }
 
     // Название задачи
+    let curY = cy - H/2 + 55;
     await miro.board.createText({
-      content: t.task_name || "Монстр",
+      content: escHtml(t.task_name || "Монстр"),
       x: textX + textW/2,
       y: curY,
       width: textW,
-      style: { fontSize: 24, color: "#f0a500", textAlign: "left" },
+      style: { fontSize: 28, color: "#f0a500", textAlign: "left" },
     });
-    curY += 75;
+    curY += 90;
 
-    // Номер задачи + SP — с кликабельной ссылкой
+    // Номер задачи + SP — гиперссылка через HTML <a>
     if (t.task_number || t.score) {
+      const numText = escHtml(t.task_number || "");
+      const scoreText = t.score ? `${t.score} SP` : "";
+      const numPart = t.task_link
+        ? `<a href="${escAttr(t.task_link)}" target="_blank">${numText}</a>`
+        : numText;
+      const parts = [numPart, scoreText].filter(Boolean);
       const numItem = await miro.board.createText({
-        content: [t.task_number, t.score ? `${t.score} SP` : ""].filter(Boolean).join("   |   "),
+        content: parts.join("   |   "),
         x: textX + textW/2,
         y: curY,
         width: textW,
-        style: { fontSize: 20, color: "#aaaaaa", textAlign: "left" },
+        style: { fontSize: 22, color: "#cccccc", textAlign: "left" },
       });
+      // Дублируем ссылку через свойство link (на случай если <a> не подхватится)
       if (t.task_link) {
-        try { numItem.link = { url: t.task_link }; await numItem.sync(); } catch(e) {}
+        try { numItem.linkedTo = t.task_link; await numItem.sync(); } catch(e) {}
       }
-      curY += 65;
+      curY += 75;
     }
 
     // Воины
     if (t.warriors && t.warriors.length > 0) {
       await miro.board.createText({
-        content: "⚔️ Воины: " + t.warriors.join("  •  "),
+        content: "⚔️ Воины: " + t.warriors.map(escHtml).join("  •  "),
         x: textX + textW/2,
         y: curY,
         width: textW,
-        style: { fontSize: 18, color: "#b0c4de", textAlign: "left" },
+        style: { fontSize: 20, color: "#b0c4de", textAlign: "left" },
       });
     }
 
-    // Баннер — под карточкой, поверх (z-order выше)
+    // Баннер — поверх нижней части прямоугольника, внутри рамки
+    const BANNER_W = W - 80;
+    const bannerY = cy + H/2 - 75;
     if (t.banner_board_url) {
       await miro.board.createImage({
         url: t.banner_board_url,
         x: cx,
-        y: cy + H/2 + 180,
-        width: W + 60,
+        y: bannerY,
+        width: BANNER_W,
       });
     }
 
-    // Арсенал — скруглённые прямоугольники с оружием
-    const arsenalY = cy + H/2 + (t.banner_board_url ? 430 : 120);
-    const WEAPON_W = 140, WEAPON_H = 58, GAP = 160;
+    // Арсенал — под карточкой, скруглённые прямоугольники с жёлтым текстом
+    const arsenalY = cy + H/2 + 90;
+    const WEAPON_W = 150, WEAPON_H = 64, GAP = 175;
     const startX = cx - (weapons.length - 1) * GAP / 2;
     for (let i = 0; i < weapons.length; i++) {
       const wx = startX + i * GAP;
@@ -715,9 +736,9 @@ async function addCardToBoard(taskIdx) {
         x: wx, y: arsenalY,
         width: WEAPON_W, height: WEAPON_H,
         style: {
-          fillColor: "#2a2a4a",
+          fillColor: "#16213e",
           fillOpacity: 1,
-          borderColor: "#4a4a7a",
+          borderColor: "#f0a500",
           borderWidth: 2,
           borderOpacity: 1,
           borderStyle: "normal",
@@ -727,7 +748,7 @@ async function addCardToBoard(taskIdx) {
         content: `${weapons[i].emoji} ${weapons[i].name}`,
         x: wx, y: arsenalY,
         width: WEAPON_W - 10,
-        style: { fontSize: 18, textAlign: "center" },
+        style: { fontSize: 20, color: "#f0a500", textAlign: "center" },
       });
     }
 
